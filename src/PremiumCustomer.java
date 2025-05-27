@@ -1,7 +1,8 @@
 // PremiumCustomer.java
 // This class represents a Premium Customer, inheriting from Customer.
 // Premium Customers get a discount on game purchases.
-import java.util.Map;
+import java.util.Map; // Not directly used, but often associated with store/game data.
+import java.util.Scanner; // For performAdminAction signature consistency
 
 public class PremiumCustomer extends Customer {
     // This variable stores the discount rate for the premium customer (e.g., 0.1 for 10%).
@@ -48,15 +49,14 @@ public class PremiumCustomer extends Customer {
 
     // Overridden method for buying a game, specific to Premium Customers.
     // Applies a discount to the game price.
+    // Takes storeName, gameName, and StoreService instance.
     @Override
-    public void buyGame(String storeName, String gameName, GameStore gameStore) {
-        // Get the map of games available in the specified store.
-        Map<String, Game> storeGames = gameStore.getGamesInStore(storeName);
+    public void buyGame(String storeName, String gameName, StoreService storeService) {
+        // Get the Game object from the store using the StoreService.
+        Game gameToBuy = storeService.getGameFromStore(storeName, gameName);
 
-        // Check if the store and game exist.
-        if (storeGames != null && storeGames.containsKey(gameName)) {
-            // Get the Game object.
-            Game gameToBuy = storeGames.get(gameName);
+        // Check if the game exists.
+        if (gameToBuy != null) {
             // Get the original price of the game.
             double originalPrice = gameToBuy.getPrice();
             // Calculate the discounted price using the customer's discount rate.
@@ -76,13 +76,12 @@ public class PremiumCustomer extends Customer {
                     // Uses getOwnedGames() inherited from Customer to get the list.
                     super.getOwnedGames().add(gameName);
                     // Log the premium purchase transaction.
-                    GameStore.logTransaction(getUsername(), "PREMIUM_PURCHASE", discountedPrice, gameName + " from " + storeName);
+                    TransactionLogger.logTransaction(getUsername(), "PREMIUM_PURCHASE", discountedPrice, gameName + " from " + storeName);
                     // Print a success message.
                     System.out.println("Premium game '" + gameName + "' purchased successfully from '" + storeName + "'!");
                     // Inform the customer about their new balance.
                     System.out.println("It has been added to your library. New balance: $" + String.format("%.2f", getBalance()));
                 } else {
-                    // This message would appear if adjustBalance failed, e.g., due to some complex rule not present here.
                     System.out.println("Purchase failed during balance adjustment.");
                 }
             } else {
@@ -93,5 +92,10 @@ public class PremiumCustomer extends Customer {
             // Print a message if the store or game is not found.
             System.out.println("Store or game not found!");
         }
+    }
+     // Override performAdminAction for consistency, though it does the same as Customer.
+    @Override
+    public void performAdminAction(Scanner scanner, UserManager userManager, StoreService storeService) {
+        System.out.println("Premium Customers (" + getUsername() + ") cannot perform admin actions.");
     }
 }

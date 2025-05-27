@@ -1,6 +1,9 @@
 // User.java
 // This is the base class for all types of users in the system.
 // It contains common properties like username, password, and role.
+
+import java.util.Scanner;
+
 public class User {
     // Stores the username of the user. This is a String.
     private String username;
@@ -74,7 +77,8 @@ public class User {
 
     // This method is intended for actions specific to administrative users.
     // In this base User class, it provides a default behavior.
-    public void performAdminAction() {
+    // It now takes necessary service instances as parameters, though not used in this base implementation.
+    public void performAdminAction(Scanner scanner, UserManager userManager, StoreService storeService) {
         // Print a message indicating that generic users don't have specific admin actions.
         System.out.println("User " + username + " does not have specific admin actions.");
     }

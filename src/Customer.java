@@ -4,6 +4,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner; // Added for performAdminAction signature consistency
 
 public class Customer extends User {
     // This variable stores the customer's account balance as a double.
@@ -71,7 +72,7 @@ public class Customer extends User {
         // Attempt to adjust the balance by adding the amount.
         if (adjustBalance(amount)) {
             // Log the transaction if the balance adjustment was successful.
-            GameStore.logTransaction(getUsername(), "TOP_UP", amount, "N/A");
+            TransactionLogger.logTransaction(getUsername(), "TOP_UP", amount, "N/A");
             // Print a success message with the new balance.
             System.out.println("Top up successful! Current balance: $" + String.format("%.2f", this.balance));
         } else {
@@ -81,15 +82,13 @@ public class Customer extends User {
     }
 
     // Method for a customer to buy a game from a store.
-    // Takes the store name, game name, and a GameStore instance as parameters.
-    public void buyGame(String storeName, String gameName, GameStore gameStore) {
-        // Get the map of games available in the specified store.
-        Map<String, Game> storeGames = gameStore.getGamesInStore(storeName);
+    // Takes the store name, game name, and a StoreService instance as parameters.
+    public void buyGame(String storeName, String gameName, StoreService storeService) {
+        // Get the Game object from the store using the StoreService.
+        Game gameToBuy = storeService.getGameFromStore(storeName, gameName);
 
-        // Check if the store and the game exist.
-        if (storeGames != null && storeGames.containsKey(gameName)) {
-            // Get the Game object for the game to be bought.
-            Game gameToBuy = storeGames.get(gameName);
+        // Check if the game exists.
+        if (gameToBuy != null) {
             // Get the price of the game.
             double price = gameToBuy.getPrice();
 
@@ -100,13 +99,12 @@ public class Customer extends User {
                     // Add the game name to the customer's list of owned games.
                     this.ownedGames.add(gameName);
                     // Log the purchase transaction.
-                    GameStore.logTransaction(getUsername(), "PURCHASE", price, gameName + " from " + storeName);
+                    TransactionLogger.logTransaction(getUsername(), "PURCHASE", price, gameName + " from " + storeName);
                     // Print a success message.
                     System.out.println("Game '" + gameName + "' purchased successfully from '" + storeName + "'!");
                     // Inform the customer that the game has been added to their library.
                     System.out.println("It has been added to your library. New balance: $" + String.format("%.2f", this.balance));
                 } else {
-                     // This might happen if adjustBalance has more complex rules, though unlikely here with the current check.
                     System.out.println("Purchase failed during balance adjustment.");
                 }
             } else {
@@ -140,7 +138,7 @@ public class Customer extends User {
     // Overridden method from the User class.
     // Customers do not have admin actions.
     @Override
-    public void performAdminAction() {
+    public void performAdminAction(Scanner scanner, UserManager userManager, StoreService storeService) {
         // Print a message indicating that customers cannot perform admin actions.
         System.out.println("Customers (" + getUsername() + ") cannot perform admin actions.");
     }
