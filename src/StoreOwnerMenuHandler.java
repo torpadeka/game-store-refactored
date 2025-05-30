@@ -15,7 +15,13 @@ public class StoreOwnerMenuHandler {
 
     public boolean processMenu() {
         displayMenuOptions();
-        int choice = getUserChoice();
+        int choice;
+        try {
+            choice = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+            return false;
+        }
 
         switch (choice) {
             case 1:
@@ -53,24 +59,11 @@ public class StoreOwnerMenuHandler {
         System.out.print("Choose an option: ");
     }
 
-    private int getUserChoice() {
-        try {
-            return Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter a number.");
-            return -1; 
-        }
-    }
-
     private void handleCreateStore() {
         System.out.print("Enter new store name: ");
         String newStoreNameStr = scanner.nextLine();
-        try {
-            StoreName newStoreName = new StoreName(newStoreNameStr);
-            storeOwner.createStore(newStoreName, storeService);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error creating store: " + e.getMessage());
-        }
+        StoreName newStoreName = new StoreName(newStoreNameStr);
+        storeOwner.createStore(newStoreName, storeService);
     }
 
     private void displayMyStores() {
@@ -85,33 +78,56 @@ public class StoreOwnerMenuHandler {
     }
 
     private void handleAddGameToStore() {
-        StoreName storeToAddGame = promptForStoreName("Enter store name to add game to: ");
-        if (storeToAddGame == null || !storeOwner.myStores.contains(storeToAddGame)) {
+        System.out.print("Enter store name to add game to: ");
+        String storeToAddGameStr = scanner.nextLine();
+        StoreName storeToAddGame = new StoreName(storeToAddGameStr);
+
+        if (!storeOwner.myStores.contains(storeToAddGame)) {
             System.out.println("You don't own this store or it doesn't exist in your list.");
             return;
         }
 
-        GameName newGameName = promptForGameName("Enter game name: ");
-        if (newGameName == null) return;
+        System.out.print("Enter game name: ");
+        String newGameNameStr = scanner.nextLine();
+        GameName newGameName = new GameName(newGameNameStr);
 
-        Price newGamePrice = promptForPrice("Enter game price: ");
-        if (newGamePrice == null) return;
+        System.out.print("Enter game price: ");
+        double priceValue = 0;
+        try {
+            priceValue = Double.parseDouble(scanner.nextLine());
+        } catch (NumberFormatException e) { 
+            System.out.println("Invalid price. Game not added.");
+            return;
+        }
+        Price newGamePrice = new Price(priceValue);
 
-        Genre newGameGenre = promptForGenre("Enter game genre: ");
-        if (newGameGenre == null) return;
+
+        System.out.print("Enter game genre: ");
+        String newGameGenreStr = scanner.nextLine();
+        Genre newGameGenre = new Genre(newGameGenreStr);
 
         storeOwner.addGameToStore(storeToAddGame, newGameName, newGamePrice, newGameGenre, storeService);
     }
 
     private void handleEditStoreSubMenu() {
-        StoreName storeToEdit = promptForStoreName("Enter the name of the store you want to edit: ");
-        if (storeToEdit == null || !storeOwner.myStores.contains(storeToEdit)) {
+        System.out.print("Enter the name of the store you want to edit: ");
+        String storeToEditStr = scanner.nextLine();
+        StoreName storeToEdit = new StoreName(storeToEditStr);
+
+        if (!storeOwner.myStores.contains(storeToEdit)) {
             System.out.println("You do not own this store or it doesn't exist!");
             return;
         }
 
         displayEditStoreOptions(storeToEdit);
-        int editChoice = getUserChoice();
+        int editChoice;
+        try {
+            editChoice = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) { 
+            System.out.println("Invalid input.");
+            return;
+        }
+
         processEditStoreChoice(editChoice, storeToEdit);
     }
 
@@ -149,86 +165,41 @@ public class StoreOwnerMenuHandler {
     private void handleChangeStoreName(StoreName oldStoreName) {
         System.out.print("Enter the new store name: ");
         String aNewStoreNameStr = scanner.nextLine();
-        try {
-            StoreName aNewStoreName = new StoreName(aNewStoreNameStr);
-            storeService.renameStore(oldStoreName, aNewStoreName, storeOwner);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error renaming store: " + e.getMessage());
-        }
+        StoreName aNewStoreName = new StoreName(aNewStoreNameStr);
+        storeService.renameStore(oldStoreName, aNewStoreName, storeOwner);
     }
 
     private void handleEditGamePrice(StoreName storeToEdit) {
-        GameName gameToEditPrice = promptForGameName("Enter the game name to edit price: ");
-        if (gameToEditPrice == null) return;
+        System.out.print("Enter the game name to edit price: ");
+        String gameToEditPriceStr = scanner.nextLine();
+        GameName gameToEditPrice = new GameName(gameToEditPriceStr);
 
-        Price aNewPrice = promptForPrice("Enter the new price: ");
-        if (aNewPrice == null) return;
-
-        storeService.editGamePrice(storeToEdit, gameToEditPrice, aNewPrice);
+        System.out.print("Enter the new price: ");
+        double aNewPriceValue;
+        try {
+            aNewPriceValue = Double.parseDouble(scanner.nextLine());
+            Price aNewPrice = new Price(aNewPriceValue);
+            storeService.editGamePrice(storeToEdit, gameToEditPrice, aNewPrice);
+        } catch (NumberFormatException e) { 
+            System.out.println("Invalid price.");
+        }
     }
 
     private void handleEditGameGenre(StoreName storeToEdit) {
-        GameName gameToEditGenre = promptForGameName("Enter the game name to edit genre: ");
-        if (gameToEditGenre == null) return;
+        System.out.print("Enter the game name to edit genre: ");
+        String gameToEditGenreStr = scanner.nextLine();
+        GameName gameToEditGenre = new GameName(gameToEditGenreStr);
 
-        Genre aNewGenre = promptForGenre("Enter the new genre: ");
-        if (aNewGenre == null) return;
-
+        System.out.print("Enter the new genre: ");
+        String aNewGenreStr = scanner.nextLine();
+        Genre aNewGenre = new Genre(aNewGenreStr);
         storeService.editGameGenre(storeToEdit, gameToEditGenre, aNewGenre);
     }
 
     private void handleRemoveGame(StoreName storeToEdit) {
-        GameName gameToRemove = promptForGameName("Enter the game name to remove: ");
-        if (gameToRemove == null) return;
-
+        System.out.print("Enter the game name to remove: ");
+        String gameToRemoveStr = scanner.nextLine();
+        GameName gameToRemove = new GameName(gameToRemoveStr);
         storeService.removeGame(storeToEdit, gameToRemove);
-    }
-
-  
-    private StoreName promptForStoreName(String prompt) {
-        System.out.print(prompt);
-        String nameStr = scanner.nextLine();
-        try {
-            return new StoreName(nameStr);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid store name: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private GameName promptForGameName(String prompt) {
-        System.out.print(prompt);
-        String nameStr = scanner.nextLine();
-        try {
-            return new GameName(nameStr);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid game name: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private Price promptForPrice(String prompt) {
-        System.out.print(prompt);
-        try {
-            double priceValue = Double.parseDouble(scanner.nextLine());
-            return new Price(priceValue);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid price format. Please enter a number.");
-            return null;
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid price: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private Genre promptForGenre(String prompt) {
-        System.out.print(prompt);
-        String genreStr = scanner.nextLine();
-        try {
-            return new Genre(genreStr);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid genre: " + e.getMessage());
-            return null;
-        }
     }
 }
