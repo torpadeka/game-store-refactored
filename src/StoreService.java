@@ -1,108 +1,124 @@
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
 
 public class StoreService {
-    private Map<String, Map<String, Game>> stores;
-    private Map<String, String> storeOwnership;
+    private Map<StoreName, Map<GameName, Game>> stores;
+    private Map<StoreName, Username> storeOwnership;
 
     public StoreService() {
         this.stores = new HashMap<>();
         this.storeOwnership = new HashMap<>();
     }
 
-    public Map<String, Game> getGamesInStore(String storeName) {
-        Map<String, Game> games = this.stores.get(storeName);
+    public Map<GameName, Game> getGamesInStore(StoreName storeName) {
+        Map<GameName, Game> games = this.stores.get(storeName);
         return (games != null) ? games : Collections.emptyMap();
     }
 
-    public Game getGameFromStore(String storeName, String gameName) {
-        Map<String, Game> gamesInStore = this.stores.get(storeName);
+    public Game getGameFromStore(StoreName storeName, GameName gameName) {
+        Map<GameName, Game> gamesInStore = this.stores.get(storeName);
         if (gamesInStore != null) {
             return gamesInStore.get(gameName);
         }
         return null;
     }
 
-    public boolean doesStoreExist(String storeName) {
+    public boolean doesStoreExist(StoreName storeName) {
         return this.stores.containsKey(storeName);
     }
 
-    public void addStore(String storeName, String ownerUsername) {
+    public void addStore(StoreName storeName, Username ownerUsername) {
         this.stores.put(storeName, new HashMap<>());
         this.storeOwnership.put(storeName, ownerUsername);
-        TransactionLogger.logTransaction(ownerUsername, "CREATE_STORE", 0, storeName);
+        TransactionLogger.logTransaction(ownerUsername, "CREATE_STORE", new Price(0), storeName.getValue());
     }
 
-    public void addGameToStore(String storeName, Game game) {
+    public void addGameToStore(StoreName storeName, Game game) {
         if (this.stores.containsKey(storeName)) {
             this.stores.get(storeName).put(game.getName(), game);
-            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "ADD_GAME", game.getPrice(), game.getName() + " to " + storeName);
+            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "ADD_GAME", game.getPrice(), game.getName().getValue() + " to " + storeName.getValue());
         } else {
-            System.out.println("Error: Store " + storeName + " not found when trying to add game.");
+            System.out.println("Error: Store " + storeName.getValue() + " not found when trying to add game.");
         }
     }
 
-    public boolean renameStore(String oldName, String newName, StoreOwner owner) {
+    public boolean renameStore(StoreName oldName, StoreName newName, StoreOwner owner) {
+        if (!validateStoreRename(oldName, newName)) {
+            return false;
+        }
+        performStoreRename(oldName, newName, owner);
+        return true;
+    }
+
+    private boolean validateStoreRename(StoreName oldName, StoreName newName) {
         if (!this.stores.containsKey(oldName)) {
-            System.out.println("Error: Old store '" + oldName + "' not found.");
+            System.out.println("Error: Old store '" + oldName.getValue() + "' not found.");
             return false;
         }
         if (this.stores.containsKey(newName)) {
-            System.out.println("Error: New store name '" + newName + "' already exists.");
+            System.out.println("Error: New store name '" + newName.getValue() + "' already exists.");
             return false;
         }
-        Map<String, Game> games = this.stores.remove(oldName);
-        String ownerUsername = this.storeOwnership.remove(oldName);
+        return true;
+    }
+
+    private void performStoreRename(StoreName oldName, StoreName newName, StoreOwner owner) {
+        Map<GameName, Game> games = this.stores.remove(oldName);
+        Username ownerUsername = this.storeOwnership.remove(oldName);
         this.stores.put(newName, games);
         this.storeOwnership.put(newName, ownerUsername);
 
         owner.updateStoreNameInList(oldName, newName);
-        TransactionLogger.logTransaction("SYSTEM", "RENAME_STORE", 0, oldName + " -> " + newName);
-        return true;
+        TransactionLogger.logTransaction(new Username("SYSTEM"), "RENAME_STORE", new Price(0), oldName.getValue() + " -> " + newName.getValue());
     }
 
-    public void editGamePrice(String storeName, String gameName, double newPrice) {
-        Map<String, Game> gamesInStore = this.stores.get(storeName);
-        if (gamesInStore != null && gamesInStore.containsKey(gameName)) {
-            Game game = gamesInStore.get(gameName);
+    public void editGamePrice(StoreName storeName, GameName gameName, Price newPrice) {
+        Game game = getGameForEdit(storeName, gameName);
+        if (game != null) {
             game.setPrice(newPrice);
-            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "EDIT_GAME_PRICE", newPrice, gameName + " in " + storeName);
-            System.out.println("Price updated successfully for " + gameName + ".");
+            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "EDIT_GAME_PRICE", newPrice, gameName.getValue() + " in " + storeName.getValue());
+            System.out.println("Price updated successfully for " + gameName.getValue() + ".");
         } else {
             System.out.println("Store or game not found for price edit.");
         }
     }
 
-     public void editGameGenre(String storeName, String gameName, String newGenre) {
-        Map<String, Game> gamesInStore = this.stores.get(storeName);
-        if (gamesInStore != null && gamesInStore.containsKey(gameName)) {
-            Game game = gamesInStore.get(gameName);
+     public void editGameGenre(StoreName storeName, GameName gameName, Genre newGenre) {
+        Game game = getGameForEdit(storeName, gameName);
+        if (game != null) {
             game.setGenre(newGenre);
-            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "EDIT_GAME_GENRE", 0, gameName + " in " + storeName + " to " + newGenre);
-            System.out.println("Genre updated successfully for " + gameName + ".");
+            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "EDIT_GAME_GENRE", new Price(0), gameName.getValue() + " in " + storeName.getValue() + " to " + newGenre.getValue());
+            System.out.println("Genre updated successfully for " + gameName.getValue() + ".");
         } else {
             System.out.println("Store or game not found for genre edit.");
         }
     }
 
-    public void removeGame(String storeName, String gameName) {
-        Map<String, Game> gamesInStore = this.stores.get(storeName);
+    public void removeGame(StoreName storeName, GameName gameName) {
+        Map<GameName, Game> gamesInStore = this.stores.get(storeName);
         if (gamesInStore != null && gamesInStore.containsKey(gameName)) {
             gamesInStore.remove(gameName);
-            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "REMOVE_GAME", 0, gameName + " from " + storeName);
+            TransactionLogger.logTransaction(this.storeOwnership.get(storeName), "REMOVE_GAME", new Price(0), gameName.getValue() + " from " + storeName.getValue());
             System.out.println("Game removed successfully.");
         } else {
             System.out.println("Store or game not found for removal.");
         }
     }
 
-    public Map<String, Map<String, Game>> getAllStores() {
+    private Game getGameForEdit(StoreName storeName, GameName gameName) {
+        Map<GameName, Game> gamesInStore = this.stores.get(storeName);
+        if (gamesInStore != null && gamesInStore.containsKey(gameName)) {
+            return gamesInStore.get(gameName);
+        }
+        return null;
+    }
+
+    public Map<StoreName, Map<GameName, Game>> getAllStores() {
         return this.stores;
     }
 
-    public String getStoreOwner(String storeName) {
+    public Username getStoreOwner(StoreName storeName) {
         return this.storeOwnership.get(storeName);
     }
 }
