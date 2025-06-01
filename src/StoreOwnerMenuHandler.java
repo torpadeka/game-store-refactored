@@ -29,10 +29,13 @@ public class StoreOwnerMenuHandler {
             System.out.println("Invalid input. Please enter a number.");
             return false;
         }
+        return executeMenuChoice(choice);
+    }
 
+    private boolean executeMenuChoice(int choice) {
         switch (choice) {
             case 1:
-            	handleCreateStore();
+                handleCreateStore();
                 break;
             case 2:
                 handleAddGameToStore();
@@ -44,7 +47,7 @@ public class StoreOwnerMenuHandler {
                 handleEditStoreSubMenu();
                 break;
             case 5:
-                handlePerformAdmin();
+                handlePerformAdminAction();
                 break;
             case 6:
                 System.out.println("Logged out.");
@@ -55,8 +58,9 @@ public class StoreOwnerMenuHandler {
         }
         return false;
     }
+
     private void handleCreateStore() {
-    	System.out.print("Enter new store name: ");
+        System.out.print("Enter new store name: ");
         String newStoreName = scanner.nextLine();
         storeOwner.createStore(newStoreName, storeService);
     }
@@ -82,8 +86,9 @@ public class StoreOwnerMenuHandler {
         String newGameGenre = scanner.nextLine();
         storeOwner.addGameToStore(storeToAddGame, newGameName, newGamePrice, newGameGenre, storeService);
     }
+
     private void handleViewMyStores() {
-    	System.out.println("Your Stores:");
+        System.out.println("Your Stores:");
         if (storeOwner.myStores.isEmpty()) {
             System.out.println("  - You don't own any stores yet.");
         } else {
@@ -92,18 +97,15 @@ public class StoreOwnerMenuHandler {
             }
         }
     }
-    private void handlePerformAdmin() {
-    	storeOwner.performAdminAction(scanner, userManager, storeService);
-    }
 
     private void handleEditStoreSubMenu() {
         System.out.print("Enter the name of the store you want to edit: ");
         String storeToEdit = scanner.nextLine();
-        if (storeOwner.myStores.contains(storeToEdit)) {
-            displayEditStoreOptions(storeToEdit);
-        } else {
+        if (!storeOwner.myStores.contains(storeToEdit)) {
             System.out.println("You do not own this store or it doesn't exist!");
+            return;
         }
+        displayEditStoreOptions(storeToEdit);
     }
 
     private void displayEditStoreOptions(String storeToEdit) {
