@@ -22,61 +22,73 @@ public class Customer extends User {
         return ownedGames;
     }
 
-    protected boolean adjustBalance(double amount) {
+    public boolean adjustBalance(double amount) {
         if (this.balance + amount < 0) {
-            if (amount < 0) { // Check only if spending
-                 System.out.println("Adjustment failed: insufficient funds for spending " + (-amount));
-                 return false;
-            }
+            System.out.println("Cannot complete transaction: Insufficient balance.");
+            return false;
         }
         this.balance += amount;
         return true;
     }
 
     public void topUp(double amount) {
-        if (amount <= 0) {
-            System.out.println("Top-up amount must be positive.");
-            return;
-        }
-        if (adjustBalance(amount)) {
-            TransactionLogger.logTransaction(getUsername(), "TOP_UP", amount, "N/A");
-            System.out.println("Top up successful! Current balance: $" + String.format("%.2f", this.balance));
+        if (amount > 0) {
+            adjustBalance(amount);
+            TransactionLogger.logTransaction(getUsername(), "TOP_UP", amount, "Balance topped up");
+            System.out.println("Balance topped up successfully. New balance: $" + String.format("%.2f", balance));
         } else {
-            System.out.println("Top up failed unexpectedly.");
+            System.out.println("Top up amount must be positive.");
         }
     }
 
     public void buyGame(String storeName, String gameName, StoreService storeService) {
         Game gameToBuy = storeService.getGameFromStore(storeName, gameName);
 
-        if (gameToBuy != null) {
-            double price = gameToBuy.getPrice();
-            if (this.balance >= price) {
-                if (adjustBalance(-price)) {
-                    this.ownedGames.add(gameName);
-                    TransactionLogger.logTransaction(getUsername(), "PURCHASE", price, gameName + " from " + storeName);
-                    System.out.println("Game '" + gameName + "' purchased successfully from '" + storeName + "'!");
-                    System.out.println("It has been added to your library. New balance: $" + String.format("%.2f", this.balance));
-                } else {
-                    System.out.println("Purchase failed during balance adjustment.");
-                }
-            } else {
-                System.out.println("Insufficient balance!");
-            }
-        } else {
+        if (!isGameAvailable(gameToBuy)) {
+            return;
+        }
+
+        double price = gameToBuy.getPrice();
+        if (canAffordGame(price)) {
+            processGamePurchase(gameName, storeName, price);
+        }
+    }
+
+    private boolean isGameAvailable(Game game) {
+        if (game == null) {
             System.out.println("Store or game not found!");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean canAffordGame(double price) {
+        if (this.balance < price) {
+            System.out.println("Insufficient balance!");
+            return false;
+        }
+        return true;
+    }
+
+    protected void processGamePurchase(String gameName, String storeName, double price) {
+        if (adjustBalance(-price)) {
+            this.ownedGames.add(gameName);
+            TransactionLogger.logTransaction(getUsername(), "PURCHASE", price, gameName + " from " + storeName);
+            System.out.println("Game '" + gameName + "' purchased successfully from '" + storeName + "'!");
+            System.out.println("It has been added to your library. New balance: $" + String.format("%.2f", balance));
+        } else {
+            System.out.println("Purchase failed during balance adjustment.");
         }
     }
 
     public void viewMyGames() {
+        System.out.println("\n--- Your Game Library ---");
         if (ownedGames.isEmpty()) {
-            System.out.println("You do not own any games yet.");
+            System.out.println("You don't own any games yet.");
         } else {
-            System.out.println("\n--- Your Game Library ---");
-            for (String gameName : ownedGames) {
-                System.out.println("- " + gameName);
+            for (String game : ownedGames) {
+                System.out.println("- " + game);
             }
-            System.out.println("-------------------------");
         }
     }
 
