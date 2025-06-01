@@ -44,29 +44,41 @@ public class StoreOwner extends User {
         System.out.println("\n--- Store Owner Admin Panel for " + getUsername() + " ---");
         System.out.println("Your Stores: " + myStores);
 
-        if (!myStores.isEmpty()) {
-            System.out.print("Enter a store name from your list to view its games (or type 'back'): ");
-            String storeToInspect = scanner.nextLine();
+        if (myStores.isEmpty()) {
+            System.out.println("You don't own any stores to perform admin actions on.");
+            return;
+        }
 
-            if (storeToInspect.equalsIgnoreCase("back")) {
-                return;
-            }
+        String storeToInspect = promptForStoreToInspect(scanner);
+        if (storeToInspect.equalsIgnoreCase("back")) {
+            return;
+        }
 
-            if (myStores.contains(storeToInspect)) {
-                System.out.println("Games in your store '" + storeToInspect + "':");
-                Map<String, Game> games = storeService.getGamesInStore(storeToInspect);
-                if (games != null && !games.isEmpty()) {
-                    for (Game game : games.values()) {
-                        System.out.println(" - " + game.getName() + " ($" + game.getPrice() + ", " + game.getGenre() + ")");
-                    }
-                } else {
-                    System.out.println("No games in this store.");
-                }
-            } else {
-                System.out.println("You do not own the store named '" + storeToInspect + "'.");
+        if (isValidStoreForInspection(storeToInspect)) {
+            displayGamesInStore(storeToInspect, storeService);
+        } else {
+            System.out.println("You do not own the store named '" + storeToInspect + "'.");
+        }
+    }
+
+    private String promptForStoreToInspect(Scanner scanner) {
+        System.out.print("Enter a store name from your list to view its games (or type 'back'): ");
+        return scanner.nextLine();
+    }
+
+    private boolean isValidStoreForInspection(String storeName) {
+        return myStores.contains(storeName);
+    }
+
+    private void displayGamesInStore(String storeName, StoreService storeService) {
+        System.out.println("Games in your store '" + storeName + "':");
+        Map<String, Game> games = storeService.getGamesInStore(storeName);
+        if (games != null && !games.isEmpty()) {
+            for (Game game : games.values()) {
+                System.out.println(" - " + game.getName() + " ($" + game.getPrice() + ", " + game.getGenre() + ")");
             }
         } else {
-            System.out.println("You don't own any stores to perform admin actions on.");
+            System.out.println("No games in this store.");
         }
     }
 }
