@@ -1,8 +1,1 @@
-/GameStoreApp.class
-/GameStore.class
-/UserManager.class
-/StoreService.class
-/TransactionLogger.class
-/CustomerMenuHandler.class
-/PremiumCustomerMenuHandler.class
-/StoreOwnerMenuHandler.class
+/MenuHandlerProvider.class

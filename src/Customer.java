@@ -1,7 +1,6 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Customer extends User {
@@ -22,7 +21,7 @@ public class Customer extends User {
         return ownedGames;
     }
 
-    public boolean adjustBalance(double amount) {
+	public boolean adjustBalance(double amount) {
         if (this.balance + amount < 0) {
             System.out.println("Cannot complete transaction: Insufficient balance.");
             return false;
@@ -40,14 +39,14 @@ public class Customer extends User {
             System.out.println("Top up amount must be positive.");
         }
     }
-
+    
     public void buyGame(String storeName, String gameName, StoreService storeService) {
         Game gameToBuy = storeService.getGameFromStore(storeName, gameName);
-
+        	
         if (!isGameAvailable(gameToBuy)) {
             return;
         }
-
+        
         double price = gameToBuy.getPrice();
         if (canAffordGame(price)) {
             processGamePurchase(gameName, storeName, price);
@@ -96,4 +95,11 @@ public class Customer extends User {
     public void performAdminAction(Scanner scanner, UserManager userManager, StoreService storeService) {
         System.out.println("Customers (" + getUsername() + ") cannot perform admin actions.");
     }
+
+	@Override
+	public boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService) {
+		return new CustomerMenuHandler(this, scanner, userManager, storeService).processMenu();
+	}
+
+
 }

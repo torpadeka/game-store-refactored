@@ -1,5 +1,4 @@
 
-import java.util.Map;
 import java.util.Scanner;
 
 public class PremiumCustomer extends Customer {
@@ -8,7 +7,7 @@ public class PremiumCustomer extends Customer {
     public PremiumCustomer(String username, String password, double discountRate) {
         super(username, password);
         super.setRole("premium_customer");
-        setDiscountRate(discountRate); // Use setter for validation
+        setDiscountRate(discountRate);
     }
 
     public double getDiscountRate() {
@@ -62,5 +61,10 @@ public class PremiumCustomer extends Customer {
     @Override
     public void performAdminAction(Scanner scanner, UserManager userManager, StoreService storeService) {
         System.out.println("Premium Customers (" + getUsername() + ") cannot perform admin actions.");
+    }
+    
+    @Override
+    public boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService) {
+    	return new PremiumCustomerMenuHandler(this, scanner, userManager, storeService).processMenu();
     }
 }

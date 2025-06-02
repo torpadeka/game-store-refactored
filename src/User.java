@@ -1,5 +1,6 @@
+import java.util.Scanner;
 
-public class User {
+public abstract class User implements MenuHandlerProvider{
     private String username;
     private String password;
     private String role;
@@ -42,4 +43,6 @@ public class User {
     public void performAdminAction(java.util.Scanner scanner, UserManager userManager, StoreService storeService) {
         System.out.println("User " + username + " does not have specific admin actions.");
     }
+
+    public abstract boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService);
 }

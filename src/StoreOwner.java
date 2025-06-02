@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-public class StoreOwner extends User {
+public class StoreOwner extends User{
     public List<String> myStores;
 
     public StoreOwner(String username, String password) {
@@ -81,4 +81,9 @@ public class StoreOwner extends User {
             System.out.println("No games in this store.");
         }
     }
+
+	@Override
+	public boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService) {
+		return new StoreOwnerMenuHandler(this, scanner, userManager, storeService).processMenu();
+	}
 }

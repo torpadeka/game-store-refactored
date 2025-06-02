@@ -1,7 +1,7 @@
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 
 public class StoreService {
     private Map<String, Map<String, Game>> stores;
@@ -24,7 +24,7 @@ public class StoreService {
         }
         return null;
     }
-
+    
     public boolean doesStoreExist(String storeName) {
         return this.stores.containsKey(storeName);
     }
