@@ -4,8 +4,8 @@ import java.util.Scanner;
 public class CustomerMenuHandler {
     private Customer customer;
     private Scanner scanner;
-    private StoreService storeService;
     private UserManager userManager;
+    private StoreService storeService;
 
     public CustomerMenuHandler(Customer customer, Scanner scanner, UserManager userManager, StoreService storeService) {
         this.customer = customer;
@@ -30,33 +30,25 @@ public class CustomerMenuHandler {
             System.out.println("Invalid input. Please enter a number.");
             return false;
         }
+        return executeMenuChoice(choice);
+    }
 
+    private boolean executeMenuChoice(int choice) {
         switch (choice) {
             case 1:
-                GameStore.viewAllStoresAndGames(storeService);
+                handleViewStoresAndGames();
                 break;
             case 2:
-                System.out.print("Enter store name: ");
-                String storeName = scanner.nextLine();
-                System.out.print("Enter game name: ");
-                String gameName = scanner.nextLine();
-                customer.buyGame(storeName, gameName, storeService);
+                handleBuyGame();
                 break;
             case 3:
-                System.out.print("Enter amount to top up: ");
-                double amount;
-                try {
-                    amount = Double.parseDouble(scanner.nextLine());
-                     customer.topUp(amount);
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid amount.");
-                }
+                handleTopUpBalance();
                 break;
             case 4:
-                customer.viewMyGames();
+                handleViewMyGames();
                 break;
             case 5:
-                customer.performAdminAction(scanner, userManager, storeService);
+                handlePerformAdminAction();
                 break;
             case 6:
                 System.out.println("Logged out.");
@@ -66,5 +58,35 @@ public class CustomerMenuHandler {
                 break;
         }
         return false;
+    }
+
+    private void handleViewStoresAndGames() {
+        GameStore.viewAllStoresAndGames(storeService);
+    }
+
+    private void handleBuyGame() {
+        System.out.print("Enter store name: ");
+        String storeName = scanner.nextLine();
+        System.out.print("Enter game name: ");
+        String gameName = scanner.nextLine();
+        customer.buyGame(storeName, gameName, storeService);
+    }
+
+    private void handleTopUpBalance() {
+        System.out.print("Enter amount to top up: ");
+        try {
+            double amount = Double.parseDouble(scanner.nextLine());
+            customer.topUp(amount);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount.");
+        }
+    }
+
+    private void handleViewMyGames() {
+        customer.viewMyGames();
+    }
+
+    private void handlePerformAdminAction() {
+        customer.performAdminAction(scanner, userManager, storeService);
     }
 }

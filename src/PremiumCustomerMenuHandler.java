@@ -31,33 +31,25 @@ public class PremiumCustomerMenuHandler {
             System.out.println("Invalid input. Please enter a number.");
             return false;
         }
+        return executeMenuChoice(choice);
+    }
 
+    private boolean executeMenuChoice(int choice) {
         switch (choice) {
             case 1:
-                GameStore.viewAllStoresAndGames(storeService);
+                handleViewStoresAndGames();
                 break;
             case 2:
-                System.out.print("Enter store name: ");
-                String storeName = scanner.nextLine();
-                System.out.print("Enter game name: ");
-                String gameName = scanner.nextLine();
-                premiumCustomer.buyGame(storeName, gameName, storeService);
+                handleBuyGamePremium();
                 break;
             case 3:
-                System.out.print("Enter amount to top up: ");
-                double amount;
-                try {
-                    amount = Double.parseDouble(scanner.nextLine());
-                    premiumCustomer.topUp(amount);
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid amount.");
-                }
+                handleTopUpBalance();
                 break;
             case 4:
-                premiumCustomer.viewMyGames();
+                handleViewMyGames();
                 break;
             case 5:
-                premiumCustomer.performAdminAction(scanner, userManager, storeService);
+                handlePerformAdminAction();
                 break;
             case 6:
                 System.out.println("Logged out.");
@@ -67,5 +59,35 @@ public class PremiumCustomerMenuHandler {
                 break;
         }
         return false;
+    }
+
+    private void handleViewStoresAndGames() {
+        GameStore.viewAllStoresAndGames(storeService);
+    }
+
+    private void handleBuyGamePremium() {
+        System.out.print("Enter store name: ");
+        String storeName = scanner.nextLine();
+        System.out.print("Enter game name: ");
+        String gameName = scanner.nextLine();
+        premiumCustomer.buyGame(storeName, gameName, storeService);
+    }
+
+    private void handleTopUpBalance() {
+        System.out.print("Enter amount to top up: ");
+        try {
+            double amount = Double.parseDouble(scanner.nextLine());
+            premiumCustomer.topUp(amount);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid amount.");
+        }
+    }
+
+    private void handleViewMyGames() {
+        premiumCustomer.viewMyGames();
+    }
+
+    private void handlePerformAdminAction() {
+        premiumCustomer.performAdminAction(scanner, userManager, storeService);
     }
 }
