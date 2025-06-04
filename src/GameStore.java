@@ -3,15 +3,15 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class GameStore {
-	
-	private static final Map<Integer, MenuAction> loggedOutActions = new HashMap<>();
+
+    private static final Map<Integer, MenuAction> loggedOutActions = new HashMap<>();
     static {
-    	loggedOutActions.put(1, new RegisterAction());
-    	loggedOutActions.put(2, new LoginAction());
-    	loggedOutActions.put(3, new ExitUser());
+        loggedOutActions.put(1, new RegisterAction());
+        loggedOutActions.put(2, new LoginAction());
+        loggedOutActions.put(3, new ExitUser());
     }
-	
-	public static void main(String[] args) {
+
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         User currentUser = null;
 
@@ -23,17 +23,19 @@ public class GameStore {
             if (currentUser == null) {
                 currentUser = handleLoggedOutState(scanner, userManager);
             } else {
-                currentUser = handleLoggedInState(scanner, userManager, storeService, currentUser);
+                System.out.println("\n--- Logged in as: " + currentUser.getUsername() + " (" + currentUser.getRole().getRoleName() + ") ---");
+                boolean loggedOut = currentUser.handleMenu(scanner, userManager, storeService);
+                currentUser = loggedOut ? null : currentUser; 
             }
         }
     }
 
-	private static User handleLoggedInState(Scanner scanner, UserManager userManager, StoreService storeService, User currentUser) {
-        System.out.println("\n--- Logged in as: " + currentUser.getUsername() + " (" + currentUser.getRole() + ") ---");
+    private static User handleLoggedInState(Scanner scanner, UserManager userManager, StoreService storeService, User currentUser) {
+        System.out.println("\n--- Logged in as: " + currentUser.getUsername() + " (" + currentUser.getRole().getRoleName() + ") ---"); 
         boolean loggedOut = currentUser.handleMenu(scanner, userManager, storeService);
         return loggedOut ? null : currentUser;
     }
-	
+
     private static User handleLoggedOutState(Scanner scanner, UserManager userManager) {
         displayLoggedOutMenu();
         int choice;
@@ -41,11 +43,11 @@ public class GameStore {
             choice = Integer.parseInt(scanner.nextLine());
         } catch (NumberFormatException e) {
             System.out.println("Invalid input. Please enter a number.");
-            return null; 
+            return null;
         }
-        
+
         MenuAction action = loggedOutActions.getOrDefault(choice, new InvalidAction());
-		return action.execute(scanner, userManager);
+        return action.execute(scanner, userManager);
     }
 
     private static void displayLoggedOutMenu() {

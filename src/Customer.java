@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,7 +7,7 @@ public class Customer extends User {
     private List<String> ownedGames;
 
     public Customer(String username, String password) {
-        super(username, password, "customer");
+        super(username, password, UserRole.CUSTOMER); 
         this.balance = 0.0;
         this.ownedGames = new ArrayList<>();
     }

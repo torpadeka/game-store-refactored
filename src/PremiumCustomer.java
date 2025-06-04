@@ -1,4 +1,3 @@
-
 import java.util.Scanner;
 
 public class PremiumCustomer extends Customer {
@@ -6,7 +5,7 @@ public class PremiumCustomer extends Customer {
 
     public PremiumCustomer(String username, String password, double discountRate) {
         super(username, password);
-        super.setRole("premium_customer");
+        super.setRole(UserRole.PREMIUM_CUSTOMER); 
         setDiscountRate(discountRate);
     }
 

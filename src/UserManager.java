@@ -1,4 +1,3 @@
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,33 +8,50 @@ public class UserManager {
         this.users = new HashMap<>();
     }
 
-    public boolean registerUser(String username, String password, String role) {
-        if (role.equalsIgnoreCase("premium_customer")) {
-            return registerUser(username, password, role, 0.1);
+    public boolean registerUser(String username, String password, String roleString) {
+        try {
+            UserRole role = UserRole.fromString(roleString);
+            if (role == UserRole.PREMIUM_CUSTOMER) {
+                return registerUser(username, password, role, 0.1);
+            }
+            return registerUser(username, password, role, 0.0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid role for registration: " + roleString);
+            return false;
         }
-        return registerUser(username, password, role, 0.0);
     }
 
-    public boolean registerUser(String username, String password, String role, double discountRate) {
+    public boolean registerUser(String username, String password, UserRole role) {
+        return registerUser(username, password, role, 0.0); // Default discountRate for non-premium roles
+    }
+
+    public boolean registerUser(String username, String password, UserRole role, double discountRate) {
         if (this.users.containsKey(username)) {
             System.out.println("Username already exists!");
             return false;
         }
 
         User newUser;
-        if (role.equalsIgnoreCase("customer")) {
-            newUser = new Customer(username, password);
-        } else if (role.equalsIgnoreCase("premium_customer")) {
-            newUser = new PremiumCustomer(username, password, discountRate);
-        } else if (role.equalsIgnoreCase("store_owner")) {
-            newUser = new StoreOwner(username, password);
-        } else {
-            System.out.println("Invalid role for registration!");
-            return false;
+        switch (role) {
+            case CUSTOMER:
+                newUser = new Customer(username, password);
+                break;
+            case PREMIUM_CUSTOMER:
+                newUser = new PremiumCustomer(username, password, discountRate);
+                break;
+            case STORE_OWNER:
+                newUser = new StoreOwner(username, password);
+                break;
+            case ADMIN: 
+                System.out.println("Admin role not yet fully implemented for registration.");
+                return false;
+            default:
+                System.out.println("Invalid role for registration!");
+                return false;
         }
 
         this.users.put(username, newUser);
-        System.out.println(role.substring(0, 1).toUpperCase() + role.substring(1).toLowerCase().replace("_", " ") + " registration successful!");
+        System.out.println(role.getRoleName().substring(0, 1).toUpperCase() + role.getRoleName().substring(1).toLowerCase().replace("_", " ") + " registration successful!");
         return true;
     }
 
@@ -43,7 +59,7 @@ public class UserManager {
         User user = this.users.get(username);
 
         if (user != null && user.checkPassword(password)) {
-            System.out.println("Login successful! Welcome " + user.getUsername());
+            System.out.println("Login successful! Welcome " + user.getUsername() + " (" + user.getRole().getRoleName() + ")");
             return user;
         } else {
             System.out.println("Invalid username or password!");

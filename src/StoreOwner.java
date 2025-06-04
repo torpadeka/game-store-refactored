@@ -1,14 +1,13 @@
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-public class StoreOwner extends User{
+public class StoreOwner extends User {
     public List<String> myStores;
 
-    public StoreOwner(String username, String password) {
-        super(username, password, "store_owner");
+    public StoreOwner(String username, String String) {
+        super(username, String, UserRole.STORE_OWNER); 
         this.myStores = new ArrayList<>();
     }
 
@@ -26,7 +25,7 @@ public class StoreOwner extends User{
         if (this.myStores.contains(storeName)) {
             Game newGame = new Game(gameName, price, genre);
             storeService.addGameToStore(storeName, newGame);
-            System.out.println("Game '" + gameName + "' ("+ genre +") added to '" + storeName + "' for $" + price);
+            System.out.println("Game '" + gameName + "' (" + genre + ") added to '" + storeName + "' for $" + price);
         } else {
             System.out.println("You do not own this store or it doesn't exist!");
         }
@@ -75,15 +74,15 @@ public class StoreOwner extends User{
         Map<String, Game> games = storeService.getGamesInStore(storeName);
         if (games != null && !games.isEmpty()) {
             for (Game game : games.values()) {
-                System.out.println(" - " + game.getName() + " ($" + game.getPrice() + ", " + game.getGenre() + ")");
+                System.out.println(" - " + game.getName() + " ($" + String.format("%.2f", game.getPrice()) + ", " + game.getGenre() + ")");
             }
         } else {
             System.out.println("No games in this store.");
         }
     }
 
-	@Override
-	public boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService) {
-		return new StoreOwnerMenuHandler(this, scanner, userManager, storeService).processMenu();
-	}
+    @Override
+    public boolean handleMenu(Scanner scanner, UserManager userManager, StoreService storeService) {
+        return new StoreOwnerMenuHandler(this, scanner, userManager, storeService).processMenu();
+    }
 }
